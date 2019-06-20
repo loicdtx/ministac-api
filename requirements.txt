@@ -3,7 +3,7 @@ attrs==19.1.0
 GeoAlchemy2==0.6.3
 jsonschema==3.0.1
 -e git+https://github.com/loicdtx/ministac.git#egg=ministac
-psycopg2==2.8.3
+psycopg2-binary==2.8.3
 pyrsistent==0.15.2
 Shapely==1.6.4.post2
 six==1.12.0

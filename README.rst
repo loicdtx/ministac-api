@@ -2,16 +2,26 @@
 Ministac-api
 ************
 
-*JSON REST API for `ministac <http://github.com/loicdtx/ministac>`_*
+*JSON REST API for `ministac <http://github.com/loicdtx/ministac>`_ *
 
-List of functionalities
-=======================
+Resources
+=========
 
-Method  endpoint   description
-GET   api/v0/collections  get a list of available collections
-GET   api/v0/<collection-name>  get the metadata of a given collections
-GET   api/v0/<collection-name>/<item-id>   get the metadata of a given item
-GET   api/v0/search   search a list of items using various filters (spatial, temporal, cloud cover)	
+List of resources
+-----------------
+
++-------------+------------------------------+---------------------------------------------------+
+| HTTP method | URI                                      | Action                                                                        |  
++=============+==============================+===================================================+
+| GET         | /ministac/v0/collections                 | Get a list of available collections                                           |  
++-------------+------------------------------+---------------------------------------------------+
+| GET         | /ministac/v0/<collection-name>           | Get the metadata of a given collection                                        |  
++-------------+------------------------------+---------------------------------------------------+
+| GET         | /ministac/v0/<collection-name>/<item-id> | Get the metadata of a given item                                              |  
++-------------+------------------------------+---------------------------------------------------+
+| POST        | /ministac/v0/search                      | Search a list of items using various filters (spatial, temporal, cloud cover) |  
++-------------+------------------------------+---------------------------------------------------+
+
 
 
 Example usage with python
@@ -43,5 +53,46 @@ Example usage with python
               'maxCloudCover': 12,
               'endDate': dt.datetime(2017, 12, 1).isoformat()}
 
-    r = requests.get('http://127.0.0.1:5000/ministac/api/v0/search', json=params)
+    r = requests.post('http://127.0.0.1:5000/ministac/api/v0/search', json=params)
     pprint(r.json())
+
+
+HTTP status codes
+=================
+
+``200``: OK
+
+``400``: Bad request
+
+``404``: Not found
+
+
+Install
+=======
+
+You must first configure `ministac <https://github.com/loicdtx/ministac>`_ (database setup and configuration file), then.
+
+
+Locally
+-------
+
+
+.. code-block:: bash
+
+    git clone git@github.com:loicdtx/ministac-api.git
+    cd ministac-api
+    pip install -r requirements.txt
+    pip install -e .
+    export FLASK_APP=api
+    flask run
+
+
+Using docker
+------------
+
+.. code-block:: bash
+
+    git clone https://github.com/loicdtx/ministac-api.git
+    cd ministac-api.git
+    docker build -t ministac-api:latest .
+    docker run --name ministac-api --rm -d -p 5000:5000 -v ~/.ministac:/root/.ministac ministac-api

@@ -41,7 +41,7 @@ SEARCH_SCHEMA = {
 }
 
 @app.errorhandler(400)
-def not_found(error):
+def bad_request(error):
     return make_response(jsonify( { 'error': 'Bad request' } ), 400)
 
 
@@ -73,7 +73,7 @@ def get_item(collection, item):
     return jsonify(item_meta)
 
 
-@app.route('/ministac/api/v0/search', methods = ['GET'])
+@app.route('/ministac/api/v0/search', methods = ['POST'])
 def search():
     content = request.get_json(silent=True)
     if content is None:
@@ -88,4 +88,4 @@ def search():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0')

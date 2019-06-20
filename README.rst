@@ -98,3 +98,18 @@ Using docker
     cd ministac-api.git
     docker build -t ministac-api:latest .
     docker run --name ministac-api --rm -d -p 5000:5000 -v ~/.ministac:/root/.ministac ministac-api
+
+
+Using docker-compose
+--------------------
+
+First configure the nginx file, ``env_file`` and ``.ministac`` files. Then:
+
+.. code-block:: bash
+
+    # Start the database container
+    docker-compose up -d db
+    # Create the ministac tables
+    docker-compose run --rm --entrypoint "python3" flaskapp -c "from ministac.db import init_db; init_db()"
+    # Start the cluster
+    docker-compose up -d

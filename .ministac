@@ -1,0 +1,6 @@
+[ministac]
+db_database=ministac
+# Optional, depending on database configuration (running on localhost or remote, require password, etc)
+db_hostname=db
+db_username=ministac_user
+db_password=qwerty

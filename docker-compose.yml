@@ -17,25 +17,14 @@ services:
       - ".ministac:/root/.ministac"
     networks:
       - db_nw
-      - web_nw
     env_file:
       - env_file
     depends_on:
       - db
-  nginx:
-    image: "nginx:1.13.5"
     ports:
-      - "8080:80"
-    volumes:
-      - ./conf.d:/etc/nginx/conf.d
-    networks:
-      - web_nw
-    depends_on: 
-      - flaskapp
+      - 5000:5000
 networks:
   db_nw:
-    driver: bridge
-  web_nw:
     driver: bridge
 volumes:
   dbdata:

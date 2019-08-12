@@ -99,6 +99,10 @@ Using docker
     docker build -t ministac-api:latest .
     docker run --name ministac-api --rm -d -p 5000:5000 -v ~/.ministac:/root/.ministac ministac-api
 
+Note:
+
+        This approach serves uwsgi binary protocol and must be combined with a nginx server.
+
 
 Using docker-compose
 --------------------
@@ -113,3 +117,7 @@ First configure the nginx file, ``env_file`` and ``.ministac`` files. Then:
     docker-compose run --rm --entrypoint "python3" flaskapp -c "from ministac.db import init_db; init_db()"
     # Start the cluster
     docker-compose up -d
+
+Note:
+
+        This approach serves uwsgi binary protocol and must be combined with a nginx server.

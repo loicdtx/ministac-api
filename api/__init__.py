@@ -4,6 +4,7 @@ from flask import Flask, jsonify, abort, request, make_response, url_for
 from jsonschema import validate
 
 import ministac
+from ministac.db import session_scope
 
 app = Flask(__name__)
 
@@ -52,13 +53,15 @@ def not_found(error):
 
 @app.route('/ministac/api/v0/collections', methods = ['GET'])
 def get_collections():
-    return jsonify(ministac.collections())
+    with session_scope() as session:
+        return jsonify(ministac.collections(session))
 
 
 @app.route('/ministac/api/v0/<string:collection>', methods = ['GET'])
 def get_collection(collection):
     try:
-        collection_meta = ministac.get_collection(collection)
+        with session_scope() as session:
+            collection_meta = ministac.get_collection(session, collection)
     except Exception as e:
         abort(404)
     return jsonify(collection_meta)
@@ -67,7 +70,8 @@ def get_collection(collection):
 @app.route('/ministac/api/v0/<string:collection>/<string:item>', methods = ['GET'])
 def get_item(collection, item):
     try:
-        item_meta = ministac.get_item(collection, item)
+        with session_scope() as session:
+            item_meta = ministac.get_item(session, collection, item)
     except Exception as e:
         abort(404)
     return jsonify(item_meta)
@@ -83,7 +87,8 @@ def search():
         validate(content, SEARCH_SCHEMA)
     except Exception as e:
         abort(400)
-    items = ministac.search(**content)
+    with session_scope() as session:
+        items = ministac.search(session, **content)
     return jsonify(items)
 
 

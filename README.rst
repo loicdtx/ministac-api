@@ -82,7 +82,7 @@ Locally
 .. code-block:: bash
 
     git clone git@github.com:loicdtx/ministac-api.git
-    cd ministac-api
+    cd ministac-api.git
     pip install -r requirements.txt
     pip install -e .
     export FLASK_APP=api

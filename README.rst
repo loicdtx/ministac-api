@@ -95,7 +95,7 @@ Using docker
 .. code-block:: bash
 
     git clone https://github.com/loicdtx/ministac-api.git
-    cd ministac-api.git
+    cd ministac-api
     docker build -t ministac-api:latest .
     docker run --name ministac-api --rm -d -p 5000:5000 -v ~/.ministac:/root/.ministac ministac-api
 

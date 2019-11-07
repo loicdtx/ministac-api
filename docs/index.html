@@ -34,7 +34,7 @@
 			<div class="slides">
 				<section>
 					<h2>Ministac</h2>
-					<h3><em>Catalogo de metadatos de imágenes satélitales en la CONABIO</em></h3>
+					<h3><em>Catálogo de metadatos de imágenes satelitales en la CONABIO</em></h3>
 					<p>Loïc Dutrieux</p>
 				</section>
 
@@ -44,7 +44,7 @@
 
 						<p>
 						<ul>
-							<li><em>mini</em>: implementacíon minimalista</li>
+							<li><em>mini</em>: implementación minimalista</li>
 							<li>STAC: <em>SpatioTemporal Asset Catalog</em>.</li>
 						</ul>
 						</p>
@@ -69,9 +69,9 @@
 					<section>
 						<h2>Conceptos</h2>
 
-						<p>El catalogo contiene <em>Collections</em> y <em>Items</em></p>
-						<p>Collection: Grupo de items (imagenes) que comparten las mismas características (sensor, nivel de procesamiento, etc)</p>
-						<p>Item: Una escena, un tile, un granule, etc. Un item pertenece a una y una sola collection</p>
+						<p>El catálogo contiene <em>Collections</em> y <em>Items</em></p>
+						<p>Collection: Grupo de items (imágenes) que comparten las mismas características (sensor, nivel de procesamiento, etc)</p>
+						<p>Item: Una escena, un <em>tile</em>, un granule, etc. Un item siempre pertenece a una collection y no puede pertenecer a ninguna otra.</p>
 					</section>
 
 					<section>
@@ -95,8 +95,8 @@
 
 					<ul>
 						<li>ministac: define la estructura de la base de datos y permite su acceso</li>
-						<li>ministac-api: JSON REST API para consultar el catalogo con consultas HTTP</li>
-						<li>ministac-admin: modulo de Administración, para agregar y actualizar las collections y items</li>
+						<li>ministac-api: JSON REST API para consultar el catálogo con consultas HTTP</li>
+						<li>ministac-admin: módulo de Administración, para agregar y actualizar las collections y items</li>
 					</ul>
 
 					
@@ -105,22 +105,22 @@
 
 				<section>
 					<section>
-						<h2>Manejo del catalogo</h2>
+						<h2>Manejo del catálogo</h2>
 
 						<p>Requiere</p>
 						<ul>
-							<li>Un administrador sistema: Levanta el catalogo</li>
-							<li>Un <em>data manager</em>: actualiza el catalogo después de cada descarga de nuevos datos</li>
+							<li>Un administrador sistema: Levanta el catálogo</li>
+							<li>Un <em>data manager</em>: actualiza el catálogo después de cada descarga de nuevos datos</li>
 							<li>Los usuarios</li>
 						</ul>	
 					</section>
 
 					<section>
-						<h2>Levantar el catalogo</h2>
+						<h2>Levantar el catálogo</h2>
 
 						<p>5 lineas</p>
 
-						<pre><code>
+						<pre><code class="bash">
 git clone https://github.com/loicdtx/ministac-api.git
 cd ministac-api
 docker-compose up -d db
@@ -132,11 +132,11 @@ docker-compose up -d
 					</section>
 
 					<section>
-						<h2>Ingestar datos</h2>
+						<h2>Insertar datos</h2>
 
 						<p>Usando la biblioteca de <b>ministac-admin</b></p>
 
-						<pre><code>
+						<pre><code class="bash">
 add_collection.py collections/landsat_sr_8.yaml
 add_items.py /path/to/scenes --pattern \"LC08.*\" --collection landsat_sr_8 --parser landsat
 						</code></pre>
@@ -152,7 +152,77 @@ add_items.py /path/to/scenes --pattern \"LC08.*\" --collection landsat_sr_8 --pa
 				</section>
 
 				<section>
-					<h2>Con python</h2>
+					<section>
+						<h2>Con python</h2>
+					</section>
+
+					<section>
+						<p>Consultar todas las escenas landsat 8 en Jalisco</p>
+						<pre><code class="python">
+from pprint import pprint
+
+import gadm
+import requests
+
+# Retrieve Jalisco boundaries in GeoJSON 
+jalisco = gadm.get_data('MEX', level=1).get(NAME_1='Jalisco')
+# Send the http request to ministac api
+r = requests.post('http://buho/ministac/api/v0/search',
+                  json={'geom': jalisco['geometry'],
+                        'collection': 'landsat_sr_8'})
+
+jalisco_landsat = r.json()
+pprint(jalisco_landsat[0])
+						</code></pre>
+					</section>
+
+					<section>
+						<pre><code class="python">
+{'assets': {'root': {'href': '/LUSTRE/MADMEX/.../LC080270442014112201T1-SC20191001190947.tar.gz',
+                     'type': 'filesystem'}},
+ 'bbox': [-100.738, 22.2273, -98.5927, 24.0021],
+ 'geometry': {'coordinates': [[[-98.60346, 23.69777],
+                               [-98.9573, 22.25624],
+                               [-98.9644, 22.2273],
+                               [-100.738, 22.485],
+                               [-100.72061, 22.55994],
+                               [-100.386, 24.0021],
+                               [-100.38536, 24.00201],
+                               [-98.5927, 23.7416],
+                               [-98.60346, 23.69777]]],
+              'type': 'Polygon'},
+ 'id': 'LC08_L1TP_027044_20141122_20170302_01_T1',
+ 'properties': {'c:description': 'Landsat data processed to surface '
+                                 'reflectance on the espa platform',
+                'datetime': '2014-11-22T17:05:09Z',
+                'eo:cloud_cover': 15.57,
+                'eo:crs': '+proj=utm +zone=14 +type=crs',
+                'eo:gsd': 30.0,
+                'eo:processing_level': 'L1',
+                'eo:sensor': 'OLI_TIRS',
+                'eo:spacecraft': 'LANDSAT_8',
+                'landsat:wrs_path': '27',
+                'landsat:wrs_row': '44'},
+ 'type': 'Feature'}
+						</code></pre>
+					</section>
+
+					<section>
+						<p>Visualizar distribución de nubosidad</p>
+						<pre><code class="python">
+import matplotlib.pyplot as plt
+
+cc = [feat['properties']['eo:cloud_cover'] for feat in jalisco_landsat]
+plt.hist(cc, bins=20)
+plt.ylabel('Count')
+plt.xlabel('Cloud cover')
+plt.show()
+						</code></pre>
+					</section>
+
+					<section>
+						<img src="figs/cc.png">
+					</section>
 				</section>
 
 				<section>
@@ -160,7 +230,7 @@ add_items.py /path/to/scenes --pattern \"LC08.*\" --collection landsat_sr_8 --pa
 				</section>
 
 				<section>
-					<h2>Proximos pasos</h2>
+					<h2>Próximos pasos</h2>
 
 				</section>
 

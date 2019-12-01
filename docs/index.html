@@ -97,9 +97,87 @@
 						<li>ministac: define la estructura de la base de datos y permite su acceso</li>
 						<li>ministac-api: JSON REST API para consultar el catálogo con consultas HTTP</li>
 						<li>ministac-admin: módulo de Administración, para agregar y actualizar las collections y items</li>
-					</ul>
+					</ul>	
+				</section>
 
-					
+				<section>
+					<section style="font-size:80%">
+						<h2>Uso y funcionalidades</h2>
+
+						<p>El catálogo organiza los datos satélites disponible en la institución y facilita su consulta independientemente de la ubicación de los archivos (en filesystems de varios disco duros o en s3 buckets).</p>
+
+
+						<p>Gracias al catálogo, uno puede:</p>
+						<ul>
+							<li>Enterarse de las colecciones existente</li>
+							<li>Hacer búsqueda adentro de colecciones usando filtros (geograficos, temporal, cobertura nubosa)</li>
+							<li>Inspeccionar metadatos de colecciones, items (escenas, tiles y granules)</li>
+							<li>Ubicar datos de interés</li>
+						</ul>
+					</section>
+
+
+					<section>
+						
+
+					<h2>Funcionalidades de la API</h2>
+
+					<table style="font-size:60%">
+						<tr>
+							<th>Verb</th>
+							<th>Endpoint</th>
+							<th>Parameters</th>
+							<th>Description</th>
+						</tr>
+						<tr>
+							<td><pre>GET</pre></td>
+							<td><pre>collections</pre></td>
+							<td></td>
+							<td>Get a list of available collections</td>
+						</tr>
+						<tr>
+							<td><pre>GET</pre></td>
+							<td><pre>&lt;collection_name&gt;</pre></td>
+							<td></td>
+							<td>Get the metadata of the given collection</td>
+						</tr>
+						<tr>
+							<td><pre>GET</pre></td>
+							<td><pre>&lt;collection_name/item_id&gt;</pre></td>
+							<td></td>
+							<td>Get the metadata of the given item</td>
+						</tr>
+						<tr>
+							<td><pre>POST</pre></td>
+							<td><pre>search</pre></td>
+							<td>
+								<pre>
+collection
+geom
+maxCloudCover
+startDate
+endDate
+maxResults
+startingNumber</pre>
+							</td>
+							<td>Search items of a collections with optional filters</td>
+						</tr>
+						<tr>
+							<td><pre>POST</pre></td>
+							<td><pre>hits</pre></td>
+							<td>
+								<pre>
+collection
+geom
+maxCloudCover
+startDate
+endDate
+</pre>
+							</td>
+							<td>Get the number of hits of a search request</td>
+						</tr>
+					</table>
+					</section>
 				</section>
 
 
@@ -124,7 +202,8 @@
 git clone https://github.com/loicdtx/ministac-api.git
 cd ministac-api
 docker-compose up -d db
-docker-compose run --rm --entrypoint "python3" flaskapp -c "from ministac.db import init_db; init_db()"
+docker-compose run --rm --entrypoint "python3" flaskapp \
+    -c "from ministac.db import init_db; init_db()"
 docker-compose up -d
 # Configure local nginx server
 						</code></pre>
@@ -138,10 +217,20 @@ docker-compose up -d
 
 						<pre><code class="bash">
 add_collection.py collections/landsat_sr_8.yaml
-add_items.py /path/to/scenes --pattern \"LC08.*\" --collection landsat_sr_8 --parser landsat
+add_items.py /path/to/scenes --pattern \"LC08.*\" \
+    --collection landsat_sr_8 --parser landsat
 						</code></pre>
 
 						<p><a href="https://github.com/loicdtx/ministac-admin">https://github.com/loicdtx/ministac-admin</a></p>
+					</section>
+
+
+					<section>
+						<h2>Extender el catálogo</h2>
+
+						<p>Para añadir nuevas colecciones, uno tiene que (1) Definir los metadatos de la coleccion en un archivo yaml y (2) escribir un "parser" de metadatos capaz de extraer metadatos de cada item.</p> 
+
+						<p>Ver ejemplos existentes en el repositorio <a href="">ministac-admin</a></p>
 					</section>
 
 
@@ -160,6 +249,7 @@ add_items.py /path/to/scenes --pattern \"LC08.*\" --collection landsat_sr_8 --pa
 						<p>Consultar todas las escenas landsat 8 en Jalisco</p>
 						<pre><code class="python">
 from pprint import pprint
+import datetime as dt
 
 import gadm
 import requests
@@ -177,6 +267,7 @@ pprint(jalisco_landsat[0])
 					</section>
 
 					<section>
+						<p>Resultado (metadatos de la primera escena)</p>
 						<pre><code class="python">
 {'assets': {'root': {'href': '/LUSTRE/MADMEX/.../LC080270442014112201T1-SC20191001190947.tar.gz',
                      'type': 'filesystem'}},
@@ -212,7 +303,8 @@ pprint(jalisco_landsat[0])
 						<pre><code class="python">
 import matplotlib.pyplot as plt
 
-cc = [feat['properties']['eo:cloud_cover'] for feat in jalisco_landsat]
+cc = [feat['properties']['eo:cloud_cover']
+      for feat in jalisco_landsat]
 plt.hist(cc, bins=20)
 plt.ylabel('Count')
 plt.xlabel('Cloud cover')
@@ -223,6 +315,30 @@ plt.show()
 					<section>
 						<img src="figs/cc.png">
 					</section>
+
+					<section style="font-size:80%">
+						<p>Cuales son los meses que tienen disponibilidad más alta de datos con bajo nubosidad (promedio sobre Jalisco, periodo 2013 a 2016)</p>
+						<pre><code class="python">
+from collections import Counter
+
+r = requests.post('http://buho/ministac/api/v0/search',
+                  json={'geom': jalisco['geometry'],
+                        'collection': 'landsat_sr_8',
+                        'maxCloudCover': 20,
+                        'startDate': dt.datetime(2013,1,1).isoformat(),
+                        'endDate': dt.datetime(2016,12,31).isoformat()})
+jalisco_landsat_20 = r.json()
+month_list = [str(dt.datetime.strptime(d['properties']['datetime'],
+                                       "%Y-%m-%dT%H:%M:%SZ").month)
+              for d in jalisco_landsat_20]
+month_list.sort()
+c = Counter(month_list)
+plt.bar(c.keys(), c.values())
+plt.ylabel('Number of scenes with cc&lt;20%')
+plt.xlabel('Month')
+plt.show()
+						</code></pre>
+					</section>
 				</section>
 
 				<section>
@@ -231,7 +347,22 @@ plt.show()
 
 				<section>
 					<h2>Próximos pasos</h2>
+					<ul>
+						<li>Inventario exhaustivo de todo los datos de la CONABIO y ingestion en el catálogo (Sentinel 1, Sentinel 2 TOA, Sentinel 2 SR, RapidEye TOA, RapidEye SR, Landsat, MODIS?)</li>
+						<li>Desarrollo de un cliente web para búsqueda interactiva del catálogo</li>
+						<p></p>
 
+						<li>Sugerencias ???</li>
+					</ul>
+
+				</section>
+
+
+				<section>
+					<h2>The end</h2>
+
+					<em>Gracias a Erick, Ixchel, Omar, Roberto para levantar el catalogo, correr pruebas y ayudarme a descubrir problemas</em>
+					
 				</section>
 
 				

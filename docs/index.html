@@ -328,27 +328,91 @@ r = requests.post('http://buho/ministac/api/v0/search',
                         'startDate': dt.datetime(2013,1,1).isoformat(),
                         'endDate': dt.datetime(2016,12,31).isoformat()})
 jalisco_landsat_20 = r.json()
-month_list = [str(dt.datetime.strptime(d['properties']['datetime'],
-                                       "%Y-%m-%dT%H:%M:%SZ").month)
+month_list = [dt.datetime.strptime(d['properties']['datetime'],
+                                       "%Y-%m-%dT%H:%M:%SZ").month
               for d in jalisco_landsat_20]
 month_list.sort()
+month_list = [str(x) for x in month_list]
 c = Counter(month_list)
 plt.bar(c.keys(), c.values())
-plt.ylabel('Number of scenes with cc&lt;20%')
+plt.ylabel('Number of scenes with cc < 20%')
 plt.xlabel('Month')
+plt.title('Period 2013-2016')
 plt.show()
 						</code></pre>
+					</section>
+					<section>
+						<img src="figs/cc_2.png">
 					</section>
 				</section>
 
 				<section>
-					<h2>Con R</h2>
+					<section>
+						<h2>Con R</h2>
+					</section>
+
+					<section>
+						<h3>Ejemplo de consulta con un rectangulo de 1 grado</h3>
+						<pre><code class="r">
+library(sf)
+library(httr)
+library(geojsonio)
+
+p <- st_point(c(-102, 22))
+square <- st_as_sfc(st_bbox(st_buffer(p, 1)))
+body <- as.json(list(geom=geojson_list(square),
+                     collection='landsat_sr_8'))
+r <- POST(url = 'http://buho/ministac/api/v0/search', body=body,
+          content_type_json())
+						</code></pre>
+					</section>
+
+					<section>
+						<h3>Escenas Landsat 8 sobre un estado</h3>
+						<pre><code class="r">
+library(raster)
+
+mex <- getData(country='MEX', level=1, type='sf')
+jalisco <- mex[mex$NAME_1 == 'Jalisco',]
+jalisco_geojson <- geojson_list(jalisco$geometry)
+body <- as.json(list(geom=jalisco_geojson,
+                     collection='landsat_sr_8'))
+r <- POST(url = 'http://buho/ministac/api/v0/search', body=body,
+          content_type_json())
+						</code></pre>
+					</section>
+
+					<section style="font-size:80%">
+						<h3>Conversión y visualización</h3>
+						<pre><code class="r">
+library(ggplot2)
+library(dplyr)
+
+fun <- function(x){geojson_sf(as.json(x))}
+sf_list <- lapply(content(r), fun)
+df0 <- do.call('rbind', sf_list)
+
+df1 <- df0 %>%
+    group_by(landsat.wrs_path, landsat.wrs_row) %>%
+    summarise(sceneNumber=n())
+
+ggplot() +
+    geom_sf(data = mex) +
+    geom_sf(data=df1, aes(fill=sceneNumber)) +
+    scale_fill_distiller(palette = 'RdPu', direction = 1) +
+    ggtitle('Landsat 8 scenes intersecting with\nthe state of Jalisco (all years)') +
+    theme_bw()
+						</code></pre>
+					</section>
+					<section>
+						<img src="figs/mex_r.png">
+					</section>
 				</section>
 
 				<section>
 					<h2>Próximos pasos</h2>
 					<ul>
-						<li>Inventario exhaustivo de todo los datos de la CONABIO y ingestion en el catálogo (Sentinel 1, Sentinel 2 TOA, Sentinel 2 SR, RapidEye TOA, RapidEye SR, Landsat, MODIS?)</li>
+						<li>Inventario exhaustivo de todo los datos de la CONABIO e ingestion en el catálogo (Sentinel 1, Sentinel 2 TOA, Sentinel 2 SR, RapidEye TOA, RapidEye SR, Landsat, MODIS?)</li>
 						<li>Desarrollo de un cliente web para búsqueda interactiva del catálogo</li>
 						<p></p>
 

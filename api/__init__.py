@@ -78,9 +78,12 @@ def get_item(collection, item):
     return jsonify(item_meta)
 
 
-@app.route('/ministac/api/v0/search', methods = ['POST'])
+@app.route('/ministac/api/v0/search', methods = ['POST', 'GET'])
 def search():
-    content = request.get_json(silent=True)
+    if flask.request.method == 'POST':
+        content = request.get_json(silent=True)
+    elif flask.request.method == 'GET':
+        content = request.args.to_dict()
     if content is None:
         abort(400)
     # Validate request json

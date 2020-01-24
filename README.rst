@@ -23,6 +23,8 @@ List of resources
 +-------------+------------------------------------------+-----------------------------------------------------------------------+
 | POST        | /ministac/v0/search                                        | Search a list of items using filters (spatial, temporal, cloud cover) |  
 +-------------+------------------------------------------+-----------------------------------------------------------------------+
+| GET         | /ministac/v0/search                                        | Search a list of items using filters (spatial, temporal, cloud cover) |  
++-------------+------------------------------------------+-----------------------------------------------------------------------+
 
 
 
@@ -56,6 +58,9 @@ Example usage with python
               'endDate': dt.datetime(2017, 12, 1).isoformat()}
 
     r = requests.post('http://127.0.0.1:5000/ministac/api/v0/search', json=params)
+    # Or
+    r = requests.get('http://127.0.0.1:5000/ministac/api/v0/search', params=params)
+
     pprint(r.json())
 
 

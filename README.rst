@@ -13,15 +13,15 @@ List of resources
 
 
 +-------------+------------------------------------------+-----------------------------------------------------------------------+
-| HTTP method | URI                                      | Action                                                                |
+| HTTP method | URI                                                        | Action                                                                |  
 +=============+==========================================+=======================================================================+
-| GET         | /ministac/v0/collections                 | Get a list of available collections                                   |
+| GET         | /ministac/v0/collections                                   | Get a list of available collections                                   |  
 +-------------+------------------------------------------+-----------------------------------------------------------------------+
-| GET         | /ministac/v0/<collection-name>           | Get the metadata of a given collection                                |
+| GET         | /ministac/v0/collections/<collection-name>                 | Get the metadata of a given collection                                |  
 +-------------+------------------------------------------+-----------------------------------------------------------------------+
-| GET         | /ministac/v0/<collection-name>/<item-id> | Get the metadata of a given item                                      |
+| GET         | /ministac/v0/collections/<collection-name>/items/<item-id> | Get the metadata of a given item                                      |  
 +-------------+------------------------------------------+-----------------------------------------------------------------------+
-| POST        | /ministac/v0/search                      | Search a list of items using filters (spatial, temporal, cloud cover) |
+| POST        | /ministac/v0/search                                        | Search a list of items using filters (spatial, temporal, cloud cover) |  
 +-------------+------------------------------------------+-----------------------------------------------------------------------+
 
 
@@ -41,12 +41,12 @@ Example usage with python
 
 
     # Get metadata of a collection
-    r = requests.get('http://127.0.0.1:5000/ministac/api/v0/landsat_sr_8')
+    r = requests.get('http://127.0.0.1:5000/ministac/api/v0/collections/landsat_sr_8')
     pprint(r.json())
 
 
     # Get metadata of an item
-    r = requests.get('http://127.0.0.1:5000/ministac/api/v0/landsat_sr_8/LC08_L1TP_028045_20171121_20171206_01_T1')
+    r = requests.get('http://127.0.0.1:5000/ministac/api/v0/collections/landsat_sr_8/items/LC08_L1TP_028045_20171121_20171206_01_T1')
     pprint(r.json())
 
 

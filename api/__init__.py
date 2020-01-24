@@ -57,7 +57,7 @@ def get_collections():
         return jsonify(ministac.collections(session))
 
 
-@app.route('/ministac/api/v0/<string:collection>', methods = ['GET'])
+@app.route('/ministac/api/v0/collections/<string:collection>', methods = ['GET'])
 def get_collection(collection):
     try:
         with session_scope() as session:
@@ -67,7 +67,8 @@ def get_collection(collection):
     return jsonify(collection_meta)
 
 
-@app.route('/ministac/api/v0/<string:collection>/<string:item>', methods = ['GET'])
+@app.route('/ministac/api/v0/collections/<string:collection>/items/<string:item>',
+           methods = ['GET'])
 def get_item(collection, item):
     try:
         with session_scope() as session:

@@ -144,18 +144,18 @@
 						</tr>
 						<tr>
 							<td><pre>GET</pre></td>
-							<td><pre>&lt;collection_name&gt;</pre></td>
+							<td><pre>collections/&lt;collection_name&gt;</pre></td>
 							<td></td>
 							<td>Get the metadata of the given collection</td>
 						</tr>
 						<tr>
 							<td><pre>GET</pre></td>
-							<td><pre>&lt;collection_name/item_id&gt;</pre></td>
+							<td><pre>collections/&lt;collection_name/items/item_id&gt;</pre></td>
 							<td></td>
 							<td>Get the metadata of the given item</td>
 						</tr>
 						<tr>
-							<td><pre>POST</pre></td>
+							<td><pre>POST/GET</pre></td>
 							<td><pre>search</pre></td>
 							<td>
 								<pre>
@@ -269,7 +269,7 @@ r = requests.post('http://buho/ministac/api/v0/search',
                         'collection': 'landsat_sr_8'})
 
 jalisco_landsat = r.json()
-pprint(jalisco_landsat[0])
+pprint(jalisco_landsat['features'][0])
 						</code></pre>
 					</section>
 
@@ -311,7 +311,7 @@ pprint(jalisco_landsat[0])
 import matplotlib.pyplot as plt
 
 cc = [feat['properties']['eo:cloud_cover']
-      for feat in jalisco_landsat]
+      for feat in jalisco_landsat['features']]
 plt.hist(cc, bins=20)
 plt.ylabel('Count')
 plt.xlabel('Cloud cover')
@@ -337,7 +337,7 @@ r = requests.post('http://buho/ministac/api/v0/search',
 jalisco_landsat_20 = r.json()
 month_list = [dt.datetime.strptime(d['properties']['datetime'],
                                        "%Y-%m-%dT%H:%M:%SZ").month
-              for d in jalisco_landsat_20]
+              for d in jalisco_landsat_20['features']]
 month_list.sort()
 month_list = [str(x) for x in month_list]
 c = Counter(month_list)
@@ -396,7 +396,7 @@ library(ggplot2)
 library(dplyr)
 
 fun <- function(x){geojson_sf(as.json(x))}
-sf_list <- lapply(content(r), fun)
+sf_list <- lapply(content(r)$features, fun)
 df0 <- do.call('rbind', sf_list)
 
 df1 <- df0 %>%

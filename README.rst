@@ -64,6 +64,9 @@ Example usage with python
     pprint(r.json())
 
 
+Also see example (in spanish) at `http://www.loicdutrieux.net/ministac-api/#/ <http://www.loicdutrieux.net/ministac-api/#/>`_.
+
+
 HTTP status codes
 =================
 
